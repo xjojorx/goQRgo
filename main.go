@@ -371,33 +371,31 @@ func encode(input string, version Version, mode EncodingMode, correction Correct
 
   // add char count
   countBits := version.CharCountLength(mode)
-  fmt.Printf("need '%d' bits for the count\n", countBits)
+  // fmt.Printf("need '%d' bits for the count\n", countBits)
   charCount := uint32(len(input))
-  fmt.Printf("char count '%d': '%08b'\n", charCount, u32tob(charCount))
+  // fmt.Printf("char count '%d': '%08b'\n", charCount, u32tob(charCount))
   numBitLen := bits.Len32(charCount)
   leadZero := bits.LeadingZeros32(charCount)
   withoutLeft := charCount << leadZero
-  fmt.Printf("without left: '%08b'\n", u32tob(withoutLeft))
+  // fmt.Printf("without left: '%08b'\n", u32tob(withoutLeft))
   neededLeft := countBits - numBitLen
   //charchountbits contains the padded number so the first n bits are the required ones
   charCountBits := withoutLeft >> uint32(neededLeft)
-  fmt.Printf("padded left: '%08b'\n", u32tob(charCountBits))
+  // fmt.Printf("padded left: '%08b'\n", u32tob(charCountBits))
   //insert it at bit 5 (ater the mode)
   countMask := charCountBits >> 4
   maskBytes := u32tob(countMask)
-  fmt.Printf("mask: '%08b'\n", maskBytes)
+  // fmt.Printf("mask: '%08b'\n", maskBytes)
   applyMask(bytes, maskBytes)
 
   //get encoded data
   encodedData := encodeInMode(input, mode)
-  fmt.Printf("encoded data: '%08b'\n", encodedData)
+  // fmt.Printf("encoded data: '%08b'\n", encodedData)
 
   //add data to the result
   totalOffsetBits := 4 + countBits
   bytesOffset := totalOffsetBits/8
   inByteOffset := totalOffsetBits % 8
-  fmt.Printf("byteoff '%d', inOff '%d'\n", bytesOffset, inByteOffset)
-  fmt.Printf("before data: %08b\n", bytes)
   for i := 0; i < len(encodedData); i++ {
     bytePos := bytesOffset + i
     byteVal :=  encodedData[i]
@@ -418,7 +416,7 @@ func encode(input string, version Version, mode EncodingMode, correction Correct
       bytes[bytePos+1] = nextPart
     }
   }
-  fmt.Printf("after  data: %08b\n", bytes)
+  // fmt.Printf("after  data: %08b\n", bytes)
 
   //fill extra bytes
   pattern := []byte{0xEC, 0x11}
@@ -493,7 +491,6 @@ func encodeAlpha(input string) []byte {
     n1 := table[c1]
     n2 := table[c2]
     numres := uint32((45*n1)+n2)
-    fmt.Printf("'%s%s' is num '%d'\n", string(c1),string(c2), numres)
 
     //get 11bit num
     bitlen := bits.Len32(numres)
@@ -510,13 +507,11 @@ func encodeAlpha(input string) []byte {
     }
     offset = (offset + uint(bitsPerSet)) % 8
 
-    fmt.Printf("result: %08b\n", result)
   }
 
   if oddInput {
     c := rune(input[len(input)-1])
     numres := uint32(table[c])
-    fmt.Printf("'%s' is num '%d'\n", string(c), numres)
 
     //get 11bit num
     bitlen := bits.Len32(numres)
@@ -530,14 +525,11 @@ func encodeAlpha(input string) []byte {
 
     bitsInserted := bitsPerSet * ((len(input)/2))
     bytesUsed := bitsInserted/8
-    fmt.Printf("inserted %d bytes before, offset: %d\n", bytesUsed, offset)
 
     for i := 0; i < len(numBytes) && bytesUsed+i < len(result) && i<2; i++ {
       result[bytesUsed+i] |= numBytes[i]
-      fmt.Printf("set byte %d out of %d\n",bytesUsed+i, totalBytes )
     }
 
-    fmt.Printf("result: %08b\n", result)
   }
 
 
